@@ -5,8 +5,10 @@ mod generator;
 mod position;
 
 fn main() {
+    // test_generate();
+    // let maze = self::generator::maze::generate_maze(|_| 1, 30, 10);
+    // self::generator::maze::print_grid(&maze);
     test_generate();
-    println!("Hello, world!");
 }
 
 fn test_generate() {
@@ -26,41 +28,16 @@ fn test_generate() {
     }
 
     let barrel_scale = 60;
-    // let generator = self::generator::RandomGenerator {
-    //     block_size: Position::new(10, 10),
-    //     image_size: Position::new(1600 + barrel_scale * 2, 900 + barrel_scale * 2),
-    //     padding: Position::new(200 + barrel_scale, 150 + barrel_scale),
-    //     distribution: 0.30,
-    //     block_color: hex(0xc0c0c0),
-    //     // block_color: hex(0xff3300),
-    //     background_color: hex(0x333333),
-    // };
-    // // let generator = self::generator::FileGenerator::new("poly.jpg");
 
-    // let blur_filter = self::filter::BlurFilter::new(1.0);
-    // let shift_filter = self::filter::MarchFilter::new(0.0325, 80, hex(0x333333));
-    // let abberate_filter = self::filter::AbberateFilter::new(2, 0, -3);
-    // let scan_filter = self::filter::ScanFilter::new(160 * 2, 0x10 / 2);
-    // let noise_filter = self::filter::NoiseFilter::new(0.0325, 0x33, 0x99);
-    // let vignette_filter = self::filter::VignetteFilter::new(-0.9, 0.3);
-    // let barrel_filter = self::filter::BarrelFilter::new(barrel_scale as f32, hex(0x333333));
-    // let crop_filter =
-    //     self::filter::CropFilter::new(barrel_scale, barrel_scale, barrel_scale, barrel_scale);
-
-    // let generator = self::generator::RandomGenerator {
-    //     block_size: Position::new(10 * 2, 10 * 2),
-    //     image_size: Position::new(3440 + barrel_scale * 2, 1440 + barrel_scale * 2),
-    //     padding: Position::new(200 + barrel_scale, 150 + barrel_scale),
-    //     distribution: 0.30,
-    //     block_color: hex(0xc0c0c0),
-    //     // block_color: hex(0xff3300),
-    //     background_color: hex(0x333333),
-    // };
     let generator = self::generator::MazeGenerator {
         cell_size: Position::new(14, 14),
         wall_size: Position::new(6, 6),
         image_size: Position::new(3440 + barrel_scale * 2, 1440 + barrel_scale * 2),
         padding: Position::new(200 - 6 + barrel_scale, 150 - 6 + barrel_scale),
+        // cell_size: Position::new(40, 40),
+        // wall_size: Position::new(10, 10),
+        // image_size: Position::new(50 * 5 + 10, 50 * 5 + 10),
+        // padding: Position::new(0, 0),
         block_color: hex(0xc0c0c0),
         // block_color: hex(0xff3300),
         background_color: hex(0x333333),

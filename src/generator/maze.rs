@@ -35,8 +35,12 @@ impl super::Generator<image::Rgb<u8>> for MazeGenerator {
         let blocks_count: Position = inner_region.dimensions() / block_size;
 
         let grid = generate_maze(
-            &self.direction_weights,
-            self.default_weight,
+            |d| {
+                self.direction_weights
+                    .get(&d)
+                    .cloned()
+                    .unwrap_or(self.default_weight)
+            },
             blocks_count.x() as usize,
             blocks_count.y() as usize,
         );
@@ -87,9 +91,8 @@ impl super::Generator<image::Rgb<u8>> for MazeGenerator {
     }
 }
 
-fn generate_maze(
-    weights: &HashMap<Direction, u32>,
-    default_weight: u32,
+pub fn generate_maze<F: Fn(Direction) -> u32>(
+    weight: F,
     width: usize,
     height: usize,
 ) -> Vec<Vec<Cell>> {
@@ -116,19 +119,8 @@ fn generate_maze(
         }
 
         let vector = possible
-            .choose_weighted(&mut rand::thread_rng(), |d| {
-                weights.get(&d.0).cloned().unwrap_or(default_weight)
-            })
+            .choose_weighted(&mut rand::thread_rng(), |d| weight(d.direction()))
             .expect("could not choose new direction");
-
-        eprintln!(
-            "iter ({:?}, {:?}) -> {:?} to ({:?}, {:?})",
-            x,
-            y,
-            vector.direction(),
-            vector.x(),
-            vector.y()
-        );
 
         vector.direction().mark(&mut grid[*y][*x]);
         vector
@@ -145,7 +137,7 @@ fn generate_maze(
 }
 
 #[derive(Debug, Copy, Clone)]
-struct Cell {
+pub struct Cell {
     visit: bool,
     north: bool,
     east: bool,
@@ -224,5 +216,22 @@ impl Direction {
             Direction::South,
             Direction::West,
         ]
+    }
+}
+
+static GRID_ALPHABET: &[char] = &[
+    '@', '╡', '╥', '╗', '╞', '═', '╔', '╦', '╨', '╝', '║', '╣', '╚', '╩', '╠', '╬',
+];
+
+pub fn print_grid(grid: &Vec<Vec<Cell>>) {
+    for row in grid.iter() {
+        for cell in row.iter() {
+            let v = GRID_ALPHABET[((cell.north as usize) << 3)
+                | ((cell.east as usize) << 2)
+                | ((cell.south as usize) << 1)
+                | (cell.west as usize)];
+            eprint!("{}", v);
+        }
+        eprint!("\n");
     }
 }
