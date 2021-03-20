@@ -7,7 +7,7 @@ pub struct DitherFilter {
 impl DitherFilter {
     pub fn new(levels: u16, white: image::Rgb<u8>, black: image::Rgb<u8>) -> Self {
         DitherFilter {
-            matrix: dbg!(generate_matrix(levels)),
+            matrix: (generate_matrix(levels)),
             white, black
         }
     }
@@ -98,14 +98,14 @@ fn combine_matricies(set: Vec<Matrix>) -> Matrix {
         row
     });
 
-    eprintln!("rows={:?}, columns={:?}", rows, columns);
+    // eprintln!("rows={:?}, columns={:?}", rows, columns);
 
     for x in 0..(rows * 2) {
         for y in 0..(columns * 2) {
             let m = (x / rows) * 2+ (y / columns);
-            eprintln!("matrix[x={:?}][y={:?}] = set[m={:?}][i={:?}][j={:?}]", x, y, m, x % rows, y % columns);
+            // eprintln!("matrix[x={:?}][y={:?}] = set[m={:?}][i={:?}][j={:?}]", x, y, m, x % rows, y % columns);
             let v = set[m][x % rows][y % columns];
-            eprintln!("v = {:?}", v);
+            // eprintln!("v = {:?}", v);
             matrix[x][y] = v;
         }
     }
