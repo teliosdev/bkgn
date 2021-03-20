@@ -1,3 +1,9 @@
+use std::{cell::RefCell, num::NonZeroUsize};
+
+use rand::distributions::{Bernoulli, Distribution};
+use rand::Rng;
+use rand_distr::Normal;
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum ColorSpace {
     Rgb,
@@ -13,7 +19,7 @@ impl AbberateFilter {
     pub fn new(r: i32, g: i32, b: i32) -> Self {
         AbberateFilter {
             channel_shifts: [r, g, b],
-            color_space: ColorSpace::Rgb,
+            color_space: ColorSpace::Yiq,
         }
     }
 }
@@ -49,6 +55,71 @@ fn shift_color(channel: usize, space: ColorSpace, from: image::Rgb<u8>, to: &mut
             let mut to_yiq = to_yiq(to.0);
             to_yiq[channel] = from_yiq[channel];
             *to = image::Rgb(to_rgb(to_yiq));
+        }
+    }
+}
+
+pub struct NullFilter<D: Distribution<f32>> {
+    pub null_start_chance: Bernoulli,
+    pub null_distribution: D,
+    pub null_component: Option<usize>,
+    pub color_space: ColorSpace,
+}
+
+impl NullFilter<Normal<f32>> {
+    pub fn new(
+        selection: f64,
+        average_null: f32,
+        null_component: impl Into<Option<usize>>,
+    ) -> Self {
+        NullFilter {
+            null_start_chance: Bernoulli::new(selection)
+                .expect("selection distribution should be between 0 and 1"),
+            null_distribution: Normal::new(average_null, average_null / 2.0).expect("???"),
+            null_component: null_component.into(),
+            color_space: ColorSpace::Rgb,
+        }
+    }
+}
+
+impl<D: Distribution<f32>> super::Filter for NullFilter<D> {
+    fn filter(&self, image: &mut image::RgbImage) {
+        let mut rng = rand::thread_rng();
+        let mut current_null: Option<NonZeroUsize> = None;
+        let mut current_component: usize =
+            self.null_component.unwrap_or_else(|| rng.gen_range(0, 3));
+        for y in 0..image.dimensions().1 {
+            for x in 0..image.dimensions().0 {
+                if let Some(current) = current_null.take() {
+                    let current = current.get() - 1;
+                    current_null = NonZeroUsize::new(current);
+                    let pixel =
+                        null_pixel(image.get_pixel(x, y), current_component, self.color_space);
+                    image.put_pixel(x, y, pixel);
+                } else {
+                    if rng.sample(&self.null_start_chance) {
+                        let stretch = rng.sample(&self.null_distribution).max(1.0) as usize;
+                        current_null = NonZeroUsize::new(stretch);
+                        current_component =
+                            self.null_component.unwrap_or_else(|| rng.gen_range(0, 3));
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn null_pixel(pixel: &image::Rgb<u8>, component: usize, color_space: ColorSpace) -> image::Rgb<u8> {
+    match color_space {
+        ColorSpace::Rgb => {
+            let mut array = pixel.0;
+            array[component] = 0;
+            image::Rgb::from(array)
+        }
+        ColorSpace::Yiq => {
+            let mut array = to_yiq(pixel.0);
+            array[component] = 0.0;
+            image::Rgb::from(to_rgb(array))
         }
     }
 }

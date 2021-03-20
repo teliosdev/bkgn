@@ -1,5 +1,3 @@
-#![feature(clamp)]
-
 mod filter;
 mod generator;
 mod position;
@@ -27,7 +25,8 @@ fn test_generate() {
         )
     }
 
-    let barrel_scale = 60;
+    let barrel_scale = 20;
+    // let barrel_scale = 0;
 
     let generator = self::generator::MazeGenerator {
         cell_size: Position::new(14, 14),
@@ -49,23 +48,39 @@ fn test_generate() {
         },
         default_weight: 10,
     };
-    // let generator = self::generator::FileGenerator::new("poly.jpg");
+    // let mut generator = self::generator::BarGenerator {
+    //     image_size: Position::new(1920 + barrel_scale * 2, 1080 + barrel_scale * 2),
+    //     initial_offset: 850,
+    //     vertical: false,
+    //     background_color: hex(0x333333),
+    //     angle: 30f64.to_radians(),
+    //     bars: vec![]
+    // };
+    // let color = hex(0xffffff);
+    // generator.push_bar(0, 128, color);
+    // generator.push_bar(32, 128, color);
+    // generator.push_bar(32, 128, color);
+    // let generator = self::generator::FileGenerator::new("v.png");
 
     let blur_filter = self::filter::BlurFilter::new(1.0);
-    let shift_filter = self::filter::MarchFilter::new(0.0125, 80, hex(0x333333));
-    let abberate_filter = self::filter::AbberateFilter::new(2, 0, -3);
+    let shift_filter = self::filter::MarchFilter::new(0.0125, 40, hex(0x333333));
+    let null_filter = self::filter::NullFilter::new(0.0000125, 3440.0 * 60.0, None);
+    let dither_filter = self::filter::DitherFilter::new(2, hex(0xc0c0c0), hex(0x333333));
+    let abberate_filter = self::filter::AbberateFilter::new(0, 4, -4);
     let scan_filter = self::filter::ScanFilter::new(160 * 3, 0x10 / 2);
     let noise_filter = self::filter::NoiseFilter::new(0.0325, 0x33, 0x99);
-    let vignette_filter = self::filter::VignetteFilter::new(-0.9, 0.3);
+    let vignette_filter = self::filter::VignetteFilter::new(-0.9, 0.1);
     let barrel_filter = self::filter::BarrelFilter::new(barrel_scale as f32, hex(0x333333));
     let crop_filter =
         self::filter::CropFilter::new(barrel_scale, barrel_scale, barrel_scale, barrel_scale);
 
     let mut image = time("generate", || generator.generate());
-    time("filter.shift", || shift_filter.filter(&mut image));
-    time("filter.noise", || noise_filter.filter(&mut image));
     time("filter.blur", || blur_filter.filter(&mut image));
+    time("filter.dither", || dither_filter.filter(&mut image));
+    time("filter.noise", || noise_filter.filter(&mut image));
+    time("filter.shift", || shift_filter.filter(&mut image));
     time("filter.abberate", || abberate_filter.filter(&mut image));
+    time("filter.null", || null_filter.filter(&mut image));
     time("filter.scan", || scan_filter.filter(&mut image));
     time("filter.barrel", || barrel_filter.filter(&mut image));
     time("filter.vignette", || vignette_filter.filter(&mut image));

@@ -60,14 +60,14 @@ macro_rules! op {
         impl $trait for $base {
             type Output = Self;
             fn $n(self, other: Self) -> Self {
-                $base(self.0.$n(other.0), self.1.$n(other.1))
+                $base((self.0).$n(other.0), (self.1).$n(other.1))
             }
         }
 
         impl $trait<u32> for $base {
             type Output = Self;
             fn $n(self, other: u32) -> Self {
-                $base(self.0.$n(other), self.1.$n(other))
+                $base((self.0).$n(other), (self.1).$n(other))
             }
         }
     };

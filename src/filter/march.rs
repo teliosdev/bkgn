@@ -17,7 +17,7 @@ impl MarchFilter<Bernoulli, Normal<f64>> {
                 .expect("selection distribution should be between 0 and 1"),
             shift_distribution: Normal::new(0.0, 0.25).expect("???"),
             max_shift,
-            keep_adjustment: Some(Box::new(|f| f * 0.95)),
+            keep_adjustment: Some(Box::new(|f| f * 0.92)),
             background_color,
         }
     }

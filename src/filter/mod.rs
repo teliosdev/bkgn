@@ -2,15 +2,17 @@ mod abberate;
 mod barrel;
 mod blur;
 mod crop;
+mod dither;
 mod march;
 mod noise;
 mod scan;
 mod vignette;
 
-pub use self::abberate::AbberateFilter;
+pub use self::abberate::{AbberateFilter, NullFilter};
 pub use self::barrel::BarrelFilter;
 pub use self::blur::BlurFilter;
 pub use self::crop::CropFilter;
+pub use self::dither::DitherFilter;
 pub use self::march::MarchFilter;
 pub use self::noise::NoiseFilter;
 pub use self::scan::ScanFilter;
